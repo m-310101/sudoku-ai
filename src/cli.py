@@ -8,12 +8,14 @@ Be creative! do whatever you want!
 - Import things from your .base module
 """
 
-from .base import SudokuBoard
+from .base import SudokuBoard, SudokuSolver
 
 def main():  # pragma: no cover
     print("This will do something")
     board = SudokuBoard(3, 0.7)
     board.print_board()
+    solver = SudokuSolver(board)
+    
 
     # print('\ngetBoard()')
     # print(board.getBoard())

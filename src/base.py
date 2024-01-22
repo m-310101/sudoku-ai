@@ -1,17 +1,15 @@
 """
-project_name base module.
+Algos for solving sudoku:
+line checks, see if number is only instance in the line
+box checks, see if number is only instance in the box
+solo number, see if cell only has one possible number
 
-This is the principal module of the project_name project.
-here you put your main classes and objects.
-
-Be creative! do whatever you want!
-
-If you want to replace this with a Flask application run:
-
-    $ make init
-
-and then choose `flask` as template.
+pen notes:
+check if 2 numbers are the only possible numbers in a box/line, if so, remove them from pen notes of other cells in the box/line
+same with 3 numbers, 4 numbers etc.
+if only locations for number in box fall on same line, remove from pen notes of other cells in line/box
 """
+
 
 from __future__ import annotations
 from sudoku import Sudoku
@@ -23,6 +21,7 @@ class SudokuBoard:
     # TODO: change how size is handled. currently changes to size doesn't instantly change board, however for setting etc. it is taking from the size variable instead of board
     def __init__(self, size: int = 3, difficulty: float = 0.5):
         self._size = size
+        self._width = self._height = size**2
         self._difficulty = difficulty
         self._puzzle = self._generate_board()
 
@@ -40,10 +39,21 @@ class SudokuBoard:
         """Sets the size of the Sudoku board"""
         if 2 <= value <= 4:
             self._size = value
+            self._width = self._height = value ** 2
             self._puzzle = self._generate_board()
         else:
             raise ValueError("Size must be between 2 and 4")
         
+    @property
+    def height(self) -> int:
+        """Returns the height of the Sudoku board"""
+        return self._height
+        
+    @property
+    def width(self) -> int:
+        """Returns the width of the Sudoku board"""
+        return self._width
+
     @property
     def difficulty(self) -> float:
         """Returns the difficulty of the Sudoku board"""
@@ -89,14 +99,14 @@ class SudokuBoard:
     def set_board_cell(self, row: int, col: int, value: int) -> None:
         """Sets the value of a cell in the Sudoku board"""
         # check if value is valid for board size
-        if (0 < value <= self._size**2) and isinstance(value, int):
+        if (0 < value <= (self._size ** 2)) and isinstance(value, int):
             # check if row and column are valid for board size
-            if ( 0 <= row < self._size) and (0 <= col < self._size):
+            if ( 0 <= row < (self._height)) and (0 <= col < (self._width)):
                 self._puzzle.board[row][col] = value
             else:
-                raise ValueError(f'Row and column must be between 0 and {self._size}')
+                raise ValueError(f'Row and column must be between 0 and {(self._size ** 2)}')
         else:
-            raise ValueError(f'Value must be between 1 and {self._size**2}')
+            raise ValueError(f'Value must be between 1 and {(self._size ** 2)}')
 
     def get_board_row(self, row: int) -> list[int]:
         """Gets a row of the Sudoku board"""
@@ -109,17 +119,18 @@ class SudokuBoard:
     def get_board_box(self, row: int, col: int) -> list[int]:
         """Gets a box of the Sudoku board"""
         # TODO: consider how we want to do this. either index the boxes within the board, or return the box of the cell position itself
+        box_pos = (row // self._size, col // self._size)
         box = []
         for i in range(self._size):
             for j in range(self._size):
-                box.append(self._puzzle.board[row + i][col + j])
+                box.append(self._puzzle.board[i + (self._size * box_pos[0])][j + (self._size * box_pos[1])])
         return box
     
     def get_empty_cells(self) -> list[tuple[int, int]]:
         """Gets the empty cells of the Sudoku board"""
         empty_cells = []
-        for i in range(self._size):
-            for j in range(self._size):
+        for i in range(self._height):
+            for j in range(self._width):
                 if self._puzzle.board[i][j] is None:
                     empty_cells.append((i, j))
         return empty_cells
@@ -131,3 +142,30 @@ class SudokuBoard:
     def get_random_empty_cell(self) -> tuple[int, int]:
         """Gets a random empty cell in the Sudoku board"""
         return random.choice(self.get_empty_cells())
+
+class SudokuSolver:
+    def __init__(self, board: SudokuBoard):
+        self._board = board
+        self._pen_notes = self._generate_pen_notes()
+
+    def _generate_pen_notes(self) -> list[list[list[int]]]:
+        possiblity_grid = [[[] for _ in range(self._board.width)] for _ in range(self._board.height)]
+
+        empty_cells = self._board.get_empty_cells()
+        for (row, col) in empty_cells:
+            for value in range((self._board.size ** 2)):
+                if self._validate_cell(value + 1, row, col):
+                    possiblity_grid[row][col].append(value + 1)
+
+        return possiblity_grid
+
+    def _validate_cell(self, value: int, row: int, col: int) -> bool:
+        """Validates a cell in the Sudoku board"""
+        if (value not in self._board.get_board_row(row)):
+            if (value not in self._board.get_board_col(col)):
+                if (value not in self._board.get_board_box(row, col)):
+                    return True
+                
+        return False
+    
+    
