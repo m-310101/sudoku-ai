@@ -146,20 +146,20 @@ class SudokuBoard:
 class SudokuSolver:
     def __init__(self, board: SudokuBoard):
         self._board = board
+        self._empty_cells = self._board.get_empty_cells()
         self._pen_notes = self._generate_pen_notes()
 
     def _generate_pen_notes(self) -> list[list[list[int]]]:
         possiblity_grid = [[[] for _ in range(self._board.width)] for _ in range(self._board.height)]
 
-        empty_cells = self._board.get_empty_cells()
-        for (row, col) in empty_cells:
+        for (row, col) in self._empty_cells:
             for value in range((self._board.size ** 2)):
-                if self._validate_cell(value + 1, row, col):
+                if self._validate_cell(row, col, value + 1):
                     possiblity_grid[row][col].append(value + 1)
 
         return possiblity_grid
 
-    def _validate_cell(self, value: int, row: int, col: int) -> bool:
+    def _validate_cell(self, row: int, col: int, value: int) -> bool:
         """Validates a cell in the Sudoku board"""
         if (value not in self._board.get_board_row(row)):
             if (value not in self._board.get_board_col(col)):
@@ -168,4 +168,65 @@ class SudokuSolver:
                 
         return False
     
+    def _set_cell(self, row: int, col: int, value: int) -> None:
+        """Sets a cell in the Sudoku board"""
+        self._board.set_board_cell(row, col, value)
+        self._empty_cells = self._board.get_empty_cells()
+        self._pen_notes = self._generate_pen_notes()
     
+    def _lonely_cell(self, row: int, col: int) -> bool:
+        """Checks if a cell is the only possible cell in a row, column or box"""
+        return (len(self._pen_notes[row][col]) == 1)
+    
+    def _lonely_row(self, row: int, col: int, value: int) -> bool:
+        """Checks if a cell is the only possible cell in a row"""
+        row_possibilities = self._pen_notes[row]
+        del row_possibilities[col]
+        for possibility in row_possibilities:
+            if (value in possibility):
+                return False
+        return True
+    
+    def _lonely_column(self, row: int, col: int, value: int) -> bool:
+        """Checks if a cell is the only possible cell in a column"""
+        column_possibilities = [row[col] for row in self._pen_notes]
+        del column_possibilities[row]
+        for possibility in column_possibilities:
+            if (value in possibility):
+                return False
+        return True
+    
+    def _lonely_box(self, row: int, col: int, value: int) -> bool:
+        """Checks if a cell is the only possible cell in a box"""
+        box_pos = (row // self._board.size, col // self._board.size)
+        box_possibilities = []
+        for i in range(self._board.size):
+            for j in range(self._board.size):
+                box_possibilities.append(self._pen_notes[i + (self._board.size * box_pos[0])][j + (self._board.size * box_pos[1])])
+        relative_index = ((row % self._board.size) * self._board.size) + (col % self._board.size)
+        del box_possibilities[relative_index]
+        for possibility in box_possibilities:
+            if (value in possibility):
+                return False
+        return True
+
+    def solve(self) -> None:
+        """Solves the Sudoku board"""
+        index = 0
+
+        while index < len(self._empty_cells):
+            row, col = self._empty_cells[index]
+            if self._lonely_cell(row, col):
+                self._set_cell(row, col, self._pen_notes[row][col][0])
+                index = 0
+            else:
+                for possibility in self._pen_notes[row][col]:
+                    if self._lonely_row(row, col, possibility):
+                        self._set_cell(row, col, possibility)
+                        index = 0
+                    elif self._lonely_column(row, col, possibility):
+                        self._set_cell(row, col, possibility)
+                        index = 0
+                    elif self._lonely_box(row, col, possibility):
+                        self._set_cell(row, col, possibility)
+                        index = 0
