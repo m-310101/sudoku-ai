@@ -181,19 +181,19 @@ class SudokuSolver:
     def _lonely_row(self, row: int, col: int, value: int) -> bool:
         """Checks if a cell is the only possible cell in a row"""
         row_possibilities = self._pen_notes[row]
-        del row_possibilities[col]
-        for possibility in row_possibilities:
-            if (value in possibility):
-                return False
+        for i in range(self._board.width):
+            if i != col:
+                if (value in row_possibilities[i]):
+                    return False
         return True
     
     def _lonely_column(self, row: int, col: int, value: int) -> bool:
         """Checks if a cell is the only possible cell in a column"""
         column_possibilities = [row[col] for row in self._pen_notes]
-        del column_possibilities[row]
-        for possibility in column_possibilities:
-            if (value in possibility):
-                return False
+        for i in range(self._board.height):
+            if i != row:
+                if (value in column_possibilities[i]):
+                    return False
         return True
     
     def _lonely_box(self, row: int, col: int, value: int) -> bool:
@@ -204,10 +204,10 @@ class SudokuSolver:
             for j in range(self._board.size):
                 box_possibilities.append(self._pen_notes[i + (self._board.size * box_pos[0])][j + (self._board.size * box_pos[1])])
         relative_index = ((row % self._board.size) * self._board.size) + (col % self._board.size)
-        del box_possibilities[relative_index]
-        for possibility in box_possibilities:
-            if (value in possibility):
-                return False
+        for i in range(self._board.size ** 2):
+            if i != relative_index:
+                if (value in box_possibilities[i]):
+                    return False
         return True
 
     def solve(self) -> None:
@@ -220,13 +220,22 @@ class SudokuSolver:
                 self._set_cell(row, col, self._pen_notes[row][col][0])
                 index = 0
             else:
+                set_cell = False
                 for possibility in self._pen_notes[row][col]:
                     if self._lonely_row(row, col, possibility):
                         self._set_cell(row, col, possibility)
+                        set_cell = True
                         index = 0
                     elif self._lonely_column(row, col, possibility):
                         self._set_cell(row, col, possibility)
+                        set_cell = True
                         index = 0
                     elif self._lonely_box(row, col, possibility):
                         self._set_cell(row, col, possibility)
+                        set_cell = True
                         index = 0
+                if not set_cell:
+                    index += 1
+        print(f'solver board: \n{self._board.print_board()}')
+        print(f'solution is: \n{self._board.puzzle.solve()}')
+    
