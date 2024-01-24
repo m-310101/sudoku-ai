@@ -1,39 +1,29 @@
-# Changelog
+Changelog
+=========
 
-All notable changes to this project will be documented in this file.
 
-## [Unreleased]
 
-### Added
+(1.0.0)
+------------
+- Altered printing. [m-310101]
+- Code refactoring. [m-310101]
+- Addes reqs. [m-310101]
+- Cli cleanup. [m-310101]
 
-- [Feature] Description of the new feature or enhancement.
 
-### Changed
 
-- [Feature] Description of the modified feature or enhancement.
-
-### Fixed
-
-- [Bug] Description of the fixed bug or issue.
-
-### Removed
-
-- [Feature] Description of the removed feature or enhancement.
-
-## [Version X.Y.Z] - YYYY-MM-DD
-
-### Added
-
-- [Feature] Description of the new feature or enhancement.
-
-### Changed
-
-- [Feature] Description of the modified feature or enhancement.
-
-### Fixed
-
-- [Bug] Description of the fixed bug or issue.
-
-### Removed
-
-- [Feature] Description of the removed feature or enhancement.
+(0.10)
+------------
+- Added basic solver algo. [m-310101]
+- Fixed index resetting. [m-310101]
+- Added Solver class base. [m-310101]
+- Refactoring, annotations and pep 8 conventions. [m-310101]
+- Added board class with cli outputting. [m-310101]
+- Added tests. [m-310101]
+- Initialise src. [m-310101]
+- Added DEVELOPMENT.md. [m-310101]
+- Added CONTRIBUTING.md. [m-310101]
+- Added CHANGELOG.md. [m-310101]
+- Added README.md. [m-310101]
+- Added .gitignore. [m-310101]
+- Initial commit. [m-310101]
